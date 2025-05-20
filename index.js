@@ -31,6 +31,37 @@ async function run() {
 
         const usersCollection = client.db("a10-hobby-hatch").collection("users");
 
+        app.get("/user", async(req, res) => {
+            const result = await usersCollection.find().toArray();
+            res.send(result);
+        });
+
+        app.get("/user/:id", async(req, res) =>{
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await usersCollection.findOne(query);
+            res.send(result);
+        })
+
+        app.post("/user", async(req, res) => {
+            const data = req.body;
+            console.log(data)
+            const result = await usersCollection.insertOne(data);
+            res.send(result);
+        });
+
+        app.patch("/user", async(req, res) => {
+            const {email, lastSignInTime} = req.body;
+            const filter = {email: email};
+            const updatedDoc = {
+                $set: {
+                    lastSignInTime: lastSignInTime
+                }
+            };
+            const result = await usersCollection.updateOne(filter, updatedDoc);
+            res.send(result);
+        })
+
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
