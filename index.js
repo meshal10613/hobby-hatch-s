@@ -4,7 +4,7 @@ const cors = require("cors");
 const { config } = require("dotenv");
 const port = process.env.port || 3000;
 const app = express();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 app.use(express.json());
 app.use(cors());
@@ -30,7 +30,9 @@ async function run() {
         // await client.connect();
 
         const usersCollection = client.db("a10-hobby-hatch").collection("users");
+        const hobbiesCollection = client.db("a10-hobby-hatch").collection("hobbies");
 
+        //usersCollection
         app.get("/user", async(req, res) => {
             const result = await usersCollection.find().toArray();
             res.send(result);
@@ -45,7 +47,6 @@ async function run() {
 
         app.post("/user", async(req, res) => {
             const data = req.body;
-            console.log(data)
             const result = await usersCollection.insertOne(data);
             res.send(result);
         });
@@ -60,7 +61,27 @@ async function run() {
             };
             const result = await usersCollection.updateOne(filter, updatedDoc);
             res.send(result);
+        });
+
+        //hobbiesCollection
+        app.get("/hobbies", async(req, res) => {
+            const result = await hobbiesCollection.find().toArray();
+            res.send(result);
+        });
+
+        app.get("/hobbies/:id", async(req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await hobbiesCollection.findOne(query);
+            res.send(result);
         })
+
+        app.post("/hobbies", async(req, res) => {
+            const data = req.body;
+            const result = await hobbiesCollection.insertOne(data);
+            res.send(result);
+        });
+
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
@@ -75,6 +96,3 @@ run().catch(console.dir);
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
-
-// a10-hobby-hatch
-// EGdwz1bV76KkUljR
