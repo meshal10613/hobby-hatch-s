@@ -65,7 +65,17 @@ async function run() {
 
         //hobbiesCollection
         app.get("/hobbies", async(req, res) => {
-            const result = await hobbiesCollection.find().toArray();
+            const {emailParams} = req.query;
+            let query = {};
+            if(emailParams){
+                query = {
+                    email: {
+                        $regex:emailParams,
+                        $options: "i",
+                    }
+                }
+            }
+            const result = await hobbiesCollection.find(query).toArray();
             res.send(result);
         });
 
@@ -74,11 +84,30 @@ async function run() {
             const query = { _id: new ObjectId(id) };
             const result = await hobbiesCollection.findOne(query);
             res.send(result);
-        })
+        });
 
         app.post("/hobbies", async(req, res) => {
             const data = req.body;
             const result = await hobbiesCollection.insertOne(data);
+            res.send(result);
+        });
+
+        app.put("/hobbies/:id", async(req, res) => {
+            const id = req.params.id;
+            const updatedHobby = req.body;
+            const filter = { _id: new ObjectId(id) };
+            const updatedDoc = {
+                $set: updatedHobby
+            };
+            const options = {upsert: true};
+            const result = await hobbiesCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        })
+
+        app.delete("/hobbies/:id", async(req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await hobbiesCollection.deleteOne(query);
             res.send(result);
         });
 
