@@ -62,8 +62,9 @@ async function run() {
 
         //hobbiesCollection
         app.get("/hobbies", async(req, res) => {
-            const {emailParams, search} = req.query;
+            const {emailParams, search, sort, hobby} = req.query;
             let query = {};
+            let sortOption = {};
             if(emailParams){
                 query = {
                     email: {
@@ -74,13 +75,44 @@ async function run() {
             };
             if(search){
                 query = {
-                    groupName: {
+                    hobby: {
                         $regex: search,
                         $options: "i",
                     }
                 }
             }
-            const result = await hobbiesCollection.find(query).toArray();
+            //sorting
+            switch (sort) {
+                case 'az':
+                sortOption = { groupName: 1 };
+                break;
+                case 'za':
+                sortOption = { groupName: -1 };
+                break;
+                // case 'newest':
+                // sortOption = { createdAt: -1 };
+                // break;
+                // case 'oldest':
+                // sortOption = { createdAt: 1 };
+                // break;
+                default:
+                sortOption = {}; // no sorting
+            }
+            if(hobby){
+                const projectFields = { _id: 0, hobby: 1 };
+                const result = await hobbiesCollection.find().project(projectFields).toArray();
+                const uniqueHobbies = [];
+                const seenHobbies = new Set();
+                for (const i of result) {
+                    if (!seenHobbies.has(i.hobby)) {
+                        seenHobbies.add(i.hobby);
+                        uniqueHobbies.push(i);
+                    }
+                };
+                res.send(uniqueHobbies)
+                return;
+            };
+            const result = await hobbiesCollection.find(query).sort(sortOption).toArray();
             res.send(result);
         });
 
