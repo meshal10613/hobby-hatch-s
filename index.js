@@ -62,12 +62,20 @@ async function run() {
 
         //hobbiesCollection
         app.get("/hobbies", async(req, res) => {
-            const {emailParams} = req.query;
+            const {emailParams, search} = req.query;
             let query = {};
             if(emailParams){
                 query = {
                     email: {
                         $regex:emailParams,
+                        $options: "i",
+                    }
+                }
+            };
+            if(search){
+                query = {
+                    groupName: {
+                        $regex: search,
                         $options: "i",
                     }
                 }
