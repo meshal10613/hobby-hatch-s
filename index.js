@@ -148,6 +148,20 @@ async function run() {
             res.send(result);
         });
 
+        app.get("/userCount", async(req, res) => {
+            const {userCount,groupCount} = req.query;
+            if(userCount){
+                const result = await usersCollection.countDocuments();
+                res.send(result);
+                return;
+            };
+            if(groupCount){
+                const result = await hobbiesCollection.countDocuments();
+                res.send(result);
+                return;
+            }
+        });
+
 
         // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
